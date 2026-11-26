@@ -1,0 +1,13 @@
+{
+  "name": "orzo",
+  "version": "0.1.0",
+  "description": "Every code block Claude writes, as a card you can copy cleanly: no terminal wrapping, no stray indents, no hidden line breaks.",
+  "author": {
+    "name": "nickpagz",
+    "url": "https://github.com/nickpagz"
+  },
+  "homepage": "https://github.com/nickpagz/orzo",
+  "repository": "https://github.com/nickpagz/orzo",
+  "license": "MIT",
+  "keywords": ["clipboard", "copy", "snippets", "terminal", "code-blocks"]
+}

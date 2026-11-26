@@ -1,0 +1,27 @@
+{
+  "description": "Orzo: start the board server with each session, and save the code blocks from every finished reply",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I \"${CLAUDE_PLUGIN_ROOT}/scripts/ensure_server.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I \"${CLAUDE_PLUGIN_ROOT}/scripts/orzo_hook.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

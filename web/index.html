@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orzo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Cellipse cx=%2216%22 cy=%2216%22 rx=%2213%22 ry=%227%22 transform=%22rotate(-30 16 16)%22 fill=%22%23e9c46a%22 stroke=%22%23b8892b%22 stroke-width=%222%22/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --surface: #ffffff;
+    --code-bg: #f1efea;
+    --border: #e2dfd8;
+    --text: #1d1c1a;
+    --muted: #6f6b63;
+    --accent: #2f6f5e;
+    --accent-soft: #e3efe9;
+    --pending: #eef6f1;
+    --flash: #fff4cf;
+    --danger: #a3372a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151514;
+      --surface: #1d1d1b;
+      --code-bg: #121211;
+      --border: #2f2e2b;
+      --text: #ebe8e1;
+      --muted: #9a958b;
+      --accent: #7cc4ab;
+      --accent-soft: #1f322b;
+      --pending: #1b2621;
+      --flash: #3a3420;
+      --danger: #e08473;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 2;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 16px;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  h1 { font-size: 15px; font-weight: 650; margin: 0; letter-spacing: -0.01em; }
+  .status { color: var(--muted); font-size: 12px; }
+  .status.offline { color: var(--danger); }
+  .spacer { flex: 1; }
+  select, button {
+    font: inherit; font-size: 13px; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 7px; padding: 5px 10px; cursor: pointer;
+  }
+  button:hover, select:hover { border-color: var(--muted); }
+  label.toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }
+  button.danger-armed { color: var(--danger); border-color: var(--danger); }
+
+  main { max-width: 960px; margin: 0 auto; padding: 16px 16px 64px; }
+  .empty { color: var(--muted); text-align: center; padding: 72px 16px; }
+  .empty strong { display: block; color: var(--text); font-size: 15px; margin-bottom: 4px; }
+
+  .turn { margin-bottom: 28px; }
+  .turn-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin: 0 2px 4px; }
+  .project { font-weight: 650; }
+  .session { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 50ch; }
+  .time { color: var(--muted); font-size: 12px; margin-left: auto; white-space: nowrap; }
+  .prompt {
+    margin: 0 2px 10px; color: var(--muted); font-size: 13px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .prompt::before { content: "You: "; font-weight: 600; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 10px; overflow: hidden;
+  }
+  .turn.fresh .card-head { animation: flash 2.4s ease-out; }
+  @keyframes flash { from { background: var(--flash); } }
+  /* Green until copied, then back to the plain surface. */
+  .card-head {
+    display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 12px;
+    background: var(--pending); transition: background-color 0.4s ease;
+  }
+  .card.copied .card-head { background: var(--surface); }
+  .step {
+    flex: none; width: 22px; height: 22px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: 12px; font-weight: 650;
+    background: var(--code-bg); color: var(--muted);
+  }
+  .label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .label.none { color: var(--muted); font-style: italic; }
+  .lang { color: var(--muted); font: 12px ui-monospace, "SF Mono", Menlo, monospace; }
+  .copy {
+    flex: none; display: inline-flex; align-items: center; gap: 6px;
+    font-weight: 550; min-width: 84px; justify-content: center;
+  }
+  .copy svg { width: 15px; height: 15px; }
+  .copy.done { color: var(--accent); border-color: var(--accent); }
+  pre {
+    margin: 0; padding: 10px 14px 12px;
+    background: var(--code-bg); border-top: 1px solid var(--border);
+    font: 12.5px/1.5 ui-monospace, "SF Mono", Menlo, monospace;
+    overflow-x: auto; white-space: pre; tab-size: 4;
+  }
+  body.wrap pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .more { display: block; margin: 8px auto 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Orzo</h1>
+  <span class="status" id="status">Connecting…</span>
+  <span class="spacer"></span>
+  <label class="toggle"><input type="checkbox" id="wrap"> Wrap long lines</label>
+  <select id="project" aria-label="Filter by project"></select>
+  <button id="clear" type="button">Clear board</button>
+</header>
+<main id="board"></main>
+
+<script>
+const COPY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>';
+const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+const PAGE_SIZE = 25;
+
+const board = document.getElementById("board");
+const statusEl = document.getElementById("status");
+const projectSel = document.getElementById("project");
+const wrapBox = document.getElementById("wrap");
+const clearBtn = document.getElementById("clear");
+
+let turns = [];
+let etag = null;
+let shown = PAGE_SIZE;
+let seen = null;          // turn ids already rendered, to flash new arrivals
+let copied = new Set();
+
+function store(key, value) {
+  try {
+    if (value === undefined) return localStorage.getItem("orzo:" + key);
+    localStorage.setItem("orzo:" + key, value);
+  } catch (e) { return null; }
+}
+
+try { copied = new Set(JSON.parse(store("copied") || "[]")); } catch (e) {}
+wrapBox.checked = store("wrap") === "1";
+document.body.classList.toggle("wrap", wrapBox.checked);
+wrapBox.addEventListener("change", () => {
+  document.body.classList.toggle("wrap", wrapBox.checked);
+  store("wrap", wrapBox.checked ? "1" : "0");
+});
+
+function rememberCopied(key) {
+  copied.add(key);
+  store("copied", JSON.stringify([...copied].slice(-2000)));
+}
+
+function ago(ts) {
+  const s = Math.max(0, Date.now() / 1000 - ts);
+  if (s < 45) return "just now";
+  if (s < 3600) return Math.round(s / 60) + " min ago";
+  if (s < 86400) return Math.round(s / 3600) + " h ago";
+  return new Date(ts * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+function el(tag, cls, text) {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text != null) node.textContent = text;
+  return node;
+}
+
+async function writeClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (e) {
+    const area = el("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand("copy");
+    area.remove();
+  }
+}
+
+function renderCard(turn, snip, index) {
+  const key = turn.id + ":" + index;
+  const card = el("div", "card");
+  if (copied.has(key)) card.classList.add("copied");
+
+  const head = el("div", "card-head");
+  head.appendChild(el("span", "step", String(index + 1)));
+  const label = el("span", "label" + (snip.label ? "" : " none"), snip.label || "Snippet");
+  label.title = snip.label || "";
+  head.appendChild(label);
+  if (snip.lang) head.appendChild(el("span", "lang", snip.lang));
+
+  const btn = el("button", "copy");
+  btn.type = "button";
+  btn.innerHTML = COPY_ICON + "<span>Copy</span>";
+  btn.addEventListener("click", async () => {
+    await writeClipboard(snip.code);
+    rememberCopied(key);
+    card.classList.add("copied");
+    btn.classList.add("done");
+    btn.innerHTML = CHECK_ICON + "<span>Copied</span>";
+    setTimeout(() => {
+      btn.classList.remove("done");
+      btn.innerHTML = COPY_ICON + "<span>Copy</span>";
+    }, 1600);
+  });
+  head.appendChild(btn);
+  card.appendChild(head);
+
+  const pre = el("pre");
+  pre.appendChild(el("code", null, snip.code));
+  card.appendChild(pre);
+  return card;
+}
+
+function renderProjects() {
+  const current = projectSel.value || store("project") || "";
+  const names = [...new Set(turns.map(t => t.project).filter(Boolean))].sort();
+  projectSel.innerHTML = "";
+  const all = el("option", null, "All projects");
+  all.value = "";
+  projectSel.appendChild(all);
+  for (const name of names) {
+    const opt = el("option", null, name);
+    opt.value = name;
+    projectSel.appendChild(opt);
+  }
+  projectSel.value = names.includes(current) ? current : "";
+}
+
+function render() {
+  renderProjects();
+  const filter = projectSel.value;
+  const visible = turns.filter(t => !filter || t.project === filter);
+  board.innerHTML = "";
+
+  if (!visible.length) {
+    const empty = el("div", "empty");
+    empty.appendChild(el("strong", null, "No snippets yet"));
+    empty.appendChild(document.createTextNode("Code blocks from Claude Code replies appear here as each reply finishes."));
+    board.appendChild(empty);
+  }
+
+  for (const turn of visible.slice(0, shown)) {
+    const section = el("section", "turn");
+    if (seen && !seen.has(turn.id)) section.classList.add("fresh");
+    const head = el("div", "turn-head");
+    head.appendChild(el("span", "project", turn.project || "~"));
+    if (turn.session_title) head.appendChild(el("span", "session", turn.session_title));
+    const time = el("span", "time", ago(turn.ts));
+    time.dataset.ts = turn.ts;
+    time.title = new Date(turn.ts * 1000).toLocaleString();
+    head.appendChild(time);
+    section.appendChild(head);
+    if (turn.prompt) {
+      const prompt = el("div", "prompt", turn.prompt.replace(/\s+/g, " "));
+      prompt.title = turn.prompt;
+      section.appendChild(prompt);
+    }
+    turn.snippets.forEach((snip, i) => section.appendChild(renderCard(turn, snip, i)));
+    board.appendChild(section);
+  }
+
+  if (visible.length > shown) {
+    const more = el("button", "more", "Show older replies");
+    more.type = "button";
+    more.addEventListener("click", () => { shown += PAGE_SIZE; render(); });
+    board.appendChild(more);
+  }
+  seen = new Set(turns.map(t => t.id));
+}
+
+async function poll() {
+  try {
+    const res = await fetch("/api/turns", { headers: etag ? { "If-None-Match": etag } : {} });
+    if (res.status === 200) {
+      etag = res.headers.get("ETag");
+      turns = (await res.json()).turns;
+      render();
+    }
+    statusEl.textContent = turns.length ? turns.length + (turns.length === 1 ? " reply" : " replies") : "Live";
+    statusEl.classList.remove("offline");
+  } catch (e) {
+    statusEl.textContent = "Server offline";
+    statusEl.classList.add("offline");
+  }
+}
+
+projectSel.addEventListener("change", () => {
+  store("project", projectSel.value);
+  shown = PAGE_SIZE;
+  render();
+});
+
+let clearTimer = null;
+clearBtn.addEventListener("click", async () => {
+  if (!clearBtn.classList.contains("danger-armed")) {
+    clearBtn.classList.add("danger-armed");
+    clearBtn.textContent = "Click again to clear";
+    clearTimer = setTimeout(() => {
+      clearBtn.classList.remove("danger-armed");
+      clearBtn.textContent = "Clear board";
+    }, 3000);
+    return;
+  }
+  clearTimeout(clearTimer);
+  clearBtn.classList.remove("danger-armed");
+  clearBtn.textContent = "Clear board";
+  await fetch("/api/clear", { method: "POST", headers: { "X-Orzo": "1" } });
+  etag = null;
+  poll();
+});
+
+setInterval(() => {
+  for (const t of document.querySelectorAll(".time[data-ts]")) t.textContent = ago(Number(t.dataset.ts));
+}, 30000);
+
+poll();
+setInterval(poll, 1500);
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "orzo",
+  "owner": {
+    "name": "nickpagz",
+    "url": "https://github.com/nickpagz"
+  },
+  "metadata": {
+    "description": "Orzo: clean copies of the code blocks Claude writes."
+  },
+  "plugins": [
+    {
+      "name": "orzo",
+      "description": "Every code block Claude writes, as a card you can copy cleanly: no terminal wrapping, no stray indents, no hidden line breaks.",
+      "source": "./",
+      "homepage": "https://github.com/nickpagz/orzo",
+      "tags": ["clipboard", "copy", "snippets", "terminal"]
+    }
+  ]
+}
