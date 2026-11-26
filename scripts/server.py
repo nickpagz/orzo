@@ -23,17 +23,24 @@ ALLOWED_HOSTS = {"127.0.0.1:%d" % PORT, "localhost:%d" % PORT}
 
 
 def load_turns():
+    """One entry per reply: cards sent during it first, then its code blocks."""
     if not STORE.exists():
         return []
-    by_id = {}
+    merged = {}
     for line in STORE.read_text(encoding="utf-8").splitlines():
         try:
-            turn = json.loads(line)
+            entry = json.loads(line)
         except ValueError:
             continue
-        # A turn saved twice (hook fired again) keeps its latest version.
-        by_id[turn.get("id")] = turn
-    return sorted(by_id.values(), key=lambda t: t.get("ts", 0), reverse=True)
+        turn = merged.setdefault(entry.get("id"), {"meta": entry, "sent": [], "reply": []})
+        if entry.get("source") == "sent":
+            turn["sent"].extend(entry.get("snippets", []))
+        else:
+            # A reply saved twice (hook fired again) keeps its latest version.
+            turn["reply"] = entry.get("snippets", [])
+            turn["meta"] = entry
+    turns = [dict(t["meta"], snippets=t["sent"] + t["reply"]) for t in merged.values()]
+    return sorted(turns, key=lambda t: t.get("ts", 0), reverse=True)
 
 
 def store_etag():

@@ -158,6 +158,13 @@ def trim_store():
     os.replace(tmp, STORE)
 
 
+def project_name(cwd):
+    cwd = cwd.rstrip("/")
+    if cwd == str(Path.home()):
+        return "~"
+    return os.path.basename(cwd) or cwd
+
+
 def main():
     payload = json.load(sys.stdin)
     transcript = Path(payload.get("transcript_path") or "")
@@ -177,13 +184,13 @@ def main():
         return
 
     cwd = payload.get("cwd") or ""
-    project = "~" if cwd.rstrip("/") == str(Path.home()) else os.path.basename(cwd.rstrip("/")) or cwd
     turn = {
         "id": (prompt or {}).get("uuid") or "%s-%d" % (payload.get("session_id", ""), time.time()),
+        "source": "reply",
         "session_id": payload.get("session_id", ""),
         "session_title": title or "",
         "cwd": cwd,
-        "project": project,
+        "project": project_name(cwd),
         "prompt": prompt_text(prompt).strip()[:300] if prompt else "",
         "ts": time.time(),
         "snippets": snippets,

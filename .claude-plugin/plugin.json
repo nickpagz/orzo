@@ -1,6 +1,6 @@
 {
   "name": "orzo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Every code block Claude writes, as a card you can copy cleanly: no terminal wrapping, no stray indents, no hidden line breaks.",
   "author": {
     "name": "nickpagz",

@@ -29,7 +29,7 @@
       --muted: #9a958b;
       --accent: #7cc4ab;
       --accent-soft: #1f322b;
-      --pending: #1b2621;
+      --pending: #203a2e;
       --flash: #3a3420;
       --danger: #e08473;
     }
@@ -110,7 +110,8 @@
     font: 12.5px/1.5 ui-monospace, "SF Mono", Menlo, monospace;
     overflow-x: auto; white-space: pre; tab-size: 4;
   }
-  body.wrap pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  body.wrap pre, .card.prose pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .step.sent { width: auto; padding: 0 8px; border-radius: 11px; color: var(--accent); }
   .more { display: block; margin: 8px auto 0; }
 </style>
 </head>
@@ -192,13 +193,15 @@ async function writeClipboard(text) {
   }
 }
 
-function renderCard(turn, snip, index) {
+// step is the card's number among the reply's code blocks, or null for a sent card.
+function renderCard(turn, snip, index, step) {
   const key = turn.id + ":" + index;
   const card = el("div", "card");
   if (copied.has(key)) card.classList.add("copied");
 
   const head = el("div", "card-head");
-  head.appendChild(el("span", "step", String(index + 1)));
+  if (snip.wrap) card.classList.add("prose");
+  head.appendChild(step == null ? el("span", "step sent", "Sent") : el("span", "step", String(step)));
   const label = el("span", "label" + (snip.label ? "" : " none"), snip.label || "Snippet");
   label.title = snip.label || "";
   head.appendChild(label);
@@ -271,7 +274,8 @@ function render() {
       prompt.title = turn.prompt;
       section.appendChild(prompt);
     }
-    turn.snippets.forEach((snip, i) => section.appendChild(renderCard(turn, snip, i)));
+    let step = 0;
+    turn.snippets.forEach((snip, i) => section.appendChild(renderCard(turn, snip, i, snip.sent ? null : ++step)));
     board.appendChild(section);
   }
 

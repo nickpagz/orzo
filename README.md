@@ -36,6 +36,16 @@ Open the board with:
 
 It opens as its own window when Chrome, Chromium, Edge or Brave is installed, and in your default browser otherwise. You can also bookmark http://127.0.0.1:4977.
 
+### Send anything to Orzo
+
+Code blocks are captured automatically. For anything else you want to copy cleanly, ask Claude to send it to Orzo:
+
+- "Send the README to Orzo"
+- "Write a reply to Sam and put it in Orzo"
+- "Send that last paragraph to Orzo as plain text"
+
+It arrives as a card marked **Sent**, exactly as written: markdown stays markdown, indents and blank lines stay put, and files are sent straight from disk, never retyped. You can also type `/orzo:send` followed by what you want.
+
 **Tip for macOS:** to get a Dock or Spotlight launcher, run this once:
 
 ```bash
@@ -46,6 +56,7 @@ osacompile -o ~/Applications/Orzo.app -e 'do shell script "open -na \"Google Chr
 
 - A `Stop` hook runs when each reply finishes. It reads the reply from the session transcript, extracts the fenced code blocks in order, and appends them to a local file.
 - A `SessionStart` hook makes sure the board server is running. The server listens on `127.0.0.1` only and serves a single page that checks for new snippets every couple of seconds.
+- A `send` skill lets Claude put a file or text on the board directly, through `scripts/orzo_send.py`. Sent cards join the reply they came from.
 - Both hooks exit quietly on any error, so Orzo can never block or break a session.
 
 ## Your data

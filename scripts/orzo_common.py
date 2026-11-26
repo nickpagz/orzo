@@ -8,7 +8,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 PORT = int(os.environ.get("ORZO_PORT", "4977"))
 URL = "http://127.0.0.1:%d/" % PORT
 SCRIPTS = Path(__file__).resolve().parent
