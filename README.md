@@ -10,7 +10,7 @@ Copying a Claude generated multiline or text wrapped command or snippet out of t
 
 - **In order.** Each reply's snippets are numbered in the order Claude gave them, labelled with the sentence just above each one. Newest reply on top.
 - **Tracks your copy.** A snippet's header is lightly tinted until you copy it, so in a multi-step reply you can see which ones you've run.
-- **All session.** Filter by project when you have several sessions going.
+- **All sessions.** Filter by project when you have several sessions going.
 - **History saved.** If you want. Clean it up anytime.
 
 ## Install
