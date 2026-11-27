@@ -1,17 +1,17 @@
 # Orzo
 
-**Clean copies of the code blocks Claude writes.**
+**Clean Claude Code snippets.**
 
-Copying a command out of a terminal often brings junk with it: line breaks where the text wrapped, indents from the layout, hidden characters you only find when the command fails. That's because Claude Code wraps and indents its replies to fit your window, so what's on screen isn't quite what Claude wrote.
+I wiped out a production database one time because Claude Code wraps and indents its replies to fit your terminal window. Don't be old me, be like new me and use Orzo.
 
-Orzo skips the screen. Every time Claude finishes a reply, Orzo pulls out the code blocks exactly as written and shows them as cards on a small local board. Click **Copy**, and you get the real text.
+Copying a Claude generated multiline or text wrapped command or snippet out of the terminal often brings the hidden line breaks and indents from the layout. Orzo attempts to solve this. Whenever Claude finishes a reply, Orzo pulls out the code blocks exactly as written and shows them as cards on a small local board. Click **Copy**, and you get the real text.
 
 ![The Orzo board, showing two replies with numbered snippet cards and copy buttons](docs/screenshot.png)
 
 - **In order.** Each reply's snippets are numbered in the order Claude gave them, labelled with the sentence just above each one. Newest reply on top.
-- **Tracks your place.** A snippet's header is lightly tinted until you copy it, so in a multi-step reply you can see which ones you've run.
-- **Every session, every project.** Filter by project when you have several sessions going.
-- **Nothing to remember.** It's automatic: no special prompts, no copying from the terminal.
+- **Tracks your copy.** A snippet's header is lightly tinted until you copy it, so in a multi-step reply you can see which ones you've run.
+- **All session.** Filter by project when you have several sessions going.
+- **History saved.** If you want. Clean it up anytime.
 
 ## Install
 
@@ -26,7 +26,7 @@ Then restart Claude Code. Orzo starts its board when a session starts, and captu
 
 **Requirements:** Python 3.8 or later available as `python3`. Nothing else to install: Orzo uses only the Python standard library.
 
-## Use
+## Usage
 
 Open the board with:
 
